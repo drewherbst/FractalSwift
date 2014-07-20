@@ -8,7 +8,7 @@
 
 import UIKit
 
-let BASE_MAX_ITER = 50.0;
+let BASE_MAX_ITER = 400.0;
 
 let X_SCALE_MIN = -2.2;
 let X_SCALE_MAX = 1.0;
@@ -29,9 +29,6 @@ class FractalView: UIView {
     var yMax: Double;
     
     init(frame: CGRect) {
-        var result = FixedPointBridge.fixedPointMul(1.0, b:2.0);
-        NSLog("%.2f", result);
-        
         self.currScale = 1.0;
         self.currMaxIter = currScale * BASE_MAX_ITER;
         self.xMax = X_SCALE_MAX;
@@ -40,7 +37,7 @@ class FractalView: UIView {
         self.yMax = Y_SCALE_MAX;
         self.xWidth = X_WIDTH;
         self.yWidth = Y_WIDTH;
-
+        
         super.init(frame: frame)
         self.backgroundColor = UIColor.whiteColor();
         self.attachGestureRecognizers();
@@ -72,7 +69,10 @@ class FractalView: UIView {
     func onDoubleTap(sender:UITapGestureRecognizer) {
         NSLog("Double tap");
         currScale *= 2.0;
-        currMaxIter = floor(currMaxIter * 1.50);
+        
+        if (currScale > 16.0) {
+            currMaxIter += 100;
+        }
         var touchPoint = sender.locationInView(self);
         recenter(touchPoint);
     }
@@ -123,6 +123,9 @@ class FractalView: UIView {
         NSLog("Called, %.2f, %.2f, maxIter = %.2f", self.bounds.width, self.bounds.height, self.currMaxIter);
         var ctx = UIGraphicsGetCurrentContext();
         
+        var totalBails = 0;
+        
+        var periodHash = Dictionary<NSValue, String>();
         for Px in 0..self.bounds.width {
             for Py in 0..self.bounds.height {
                
@@ -130,21 +133,41 @@ class FractalView: UIView {
                 var y0 = yMax - Double(Py)*(yC);
                 
                 var iteration = 0.0
-                var xx = 0.0
-                var yy = 0.0
+                var x = 0.0
+                var y = 0.0
                 
-                while (iteration < currMaxIter) {
-                    var xSqr = xx * xx;
-                    var ySqr = yy * yy;
-                    
-                    if (xSqr + ySqr >= 4.0) {
-                        break;
+                //Cardioid
+                var temp = x0 + 1.0;
+                temp = temp * temp + y0*y0;
+                if (temp < 0.0625){
+                    iteration = currMaxIter;
+                    totalBails++;
+                } else {
+                    while (iteration < currMaxIter) {
+                        var xSqr = x * x;
+                        var ySqr = y * y;
+                        
+                        if (xSqr + ySqr >= 4.0) {
+                            break;
+                        }
+                        
+                        
+                        var yTmp = x * y;
+                        yTmp += yTmp;
+                        yTmp += y0;
+                        var xTmp = xSqr - ySqr + x0;
+                        
+                        if (x == xTmp && y == yTmp) {
+                            totalBails++;
+                            iteration = currMaxIter;
+                            break;
+                        }
+                        
+                        x = xTmp;
+                        y = yTmp;
+                        
+                        iteration++;
                     }
-                    
-                    var xTmp = xSqr - ySqr + x0;
-                    yy = 2.0 * xx * yy + y0;
-                    xx = xTmp;
-                    iteration++;
                 }
               
                 var hue = Double(iteration) / Double(self.currMaxIter);
@@ -152,7 +175,6 @@ class FractalView: UIView {
                 CGContextFillRect(ctx, CGRectMake(Px, Py, 1.0, 1.0));
             }
         } // end algorithm
-        NSLog("Execution time took %.2f", -start.timeIntervalSinceNow);
+        NSLog("Total bailouts = %d; Execution time took %.2f", totalBails, -start.timeIntervalSinceNow);
     }
-
 }

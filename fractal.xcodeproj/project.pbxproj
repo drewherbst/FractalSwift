@@ -13,7 +13,17 @@
 		3A2D906F197AADFA00206995 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3A2D906E197AADFA00206995 /* Images.xcassets */; };
 		3A2D907B197AADFA00206995 /* fractalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2D907A197AADFA00206995 /* fractalTests.swift */; };
 		3A2D9085197AAE2A00206995 /* FractalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2D9084197AAE2A00206995 /* FractalView.swift */; };
-		3ADEA082197C23BF00AD76C2 /* FixedPointBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 3ADEA081197C23BF00AD76C2 /* FixedPointBridge.m */; };
+		3A5F3919197C47CC00A5139D /* code_style.txt in Resources */ = {isa = PBXBuildFile; fileRef = 3A5F3908197C47CC00A5139D /* code_style.txt */; };
+		3A5F391A197C47CC00A5139D /* fix16_exp.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A5F3909197C47CC00A5139D /* fix16_exp.c */; };
+		3A5F391B197C47CC00A5139D /* fix16_sqrt.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A5F390A197C47CC00A5139D /* fix16_sqrt.c */; };
+		3A5F391C197C47CC00A5139D /* fix16_str.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A5F390B197C47CC00A5139D /* fix16_str.c */; };
+		3A5F391D197C47CC00A5139D /* fix16_trig.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A5F390D197C47CC00A5139D /* fix16_trig.c */; };
+		3A5F391E197C47CC00A5139D /* fix16.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A5F390E197C47CC00A5139D /* fix16.c */; };
+		3A5F391F197C47CC00A5139D /* fract32.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A5F3912197C47CC00A5139D /* fract32.c */; };
+		3A5F3920197C47CC00A5139D /* libfixmath.cbp in Resources */ = {isa = PBXBuildFile; fileRef = 3A5F3915197C47CC00A5139D /* libfixmath.cbp */; };
+		3A5F3921197C47CC00A5139D /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 3A5F3916197C47CC00A5139D /* Makefile */; };
+		3A5F3922197C47CC00A5139D /* uint32.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A5F3917197C47CC00A5139D /* uint32.c */; };
+		3ADEA082197C23BF00AD76C2 /* FixedPointBridge.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3ADEA081197C23BF00AD76C2 /* FixedPointBridge.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,10 +47,26 @@
 		3A2D9079197AADFA00206995 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3A2D907A197AADFA00206995 /* fractalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fractalTests.swift; sourceTree = "<group>"; };
 		3A2D9084197AAE2A00206995 /* FractalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FractalView.swift; sourceTree = "<group>"; };
-		3ADEA07E197C233100AD76C2 /* fixedptc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fixedptc.h; path = ../../../../Downloads/fixedptc.h; sourceTree = "<group>"; };
+		3A5F3908197C47CC00A5139D /* code_style.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = code_style.txt; path = "../../libfixmath-read-only/libfixmath/code_style.txt"; sourceTree = "<group>"; };
+		3A5F3909197C47CC00A5139D /* fix16_exp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = fix16_exp.c; path = "../../libfixmath-read-only/libfixmath/fix16_exp.c"; sourceTree = "<group>"; };
+		3A5F390A197C47CC00A5139D /* fix16_sqrt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = fix16_sqrt.c; path = "../../libfixmath-read-only/libfixmath/fix16_sqrt.c"; sourceTree = "<group>"; };
+		3A5F390B197C47CC00A5139D /* fix16_str.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = fix16_str.c; path = "../../libfixmath-read-only/libfixmath/fix16_str.c"; sourceTree = "<group>"; };
+		3A5F390C197C47CC00A5139D /* fix16_trig_sin_lut.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fix16_trig_sin_lut.h; path = "../../libfixmath-read-only/libfixmath/fix16_trig_sin_lut.h"; sourceTree = "<group>"; };
+		3A5F390D197C47CC00A5139D /* fix16_trig.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = fix16_trig.c; path = "../../libfixmath-read-only/libfixmath/fix16_trig.c"; sourceTree = "<group>"; };
+		3A5F390E197C47CC00A5139D /* fix16.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = fix16.c; path = "../../libfixmath-read-only/libfixmath/fix16.c"; sourceTree = "<group>"; };
+		3A5F390F197C47CC00A5139D /* fix16.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fix16.h; path = "../../libfixmath-read-only/libfixmath/fix16.h"; sourceTree = "<group>"; };
+		3A5F3910197C47CC00A5139D /* fix16_class.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = fix16_class.hpp; path = "../../libfixmath-read-only/libfixmath/fix16_class.hpp"; sourceTree = "<group>"; };
+		3A5F3911197C47CC00A5139D /* fixmath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fixmath.h; path = "../../libfixmath-read-only/libfixmath/fixmath.h"; sourceTree = "<group>"; };
+		3A5F3912197C47CC00A5139D /* fract32.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = fract32.c; path = "../../libfixmath-read-only/libfixmath/fract32.c"; sourceTree = "<group>"; };
+		3A5F3913197C47CC00A5139D /* fract32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fract32.h; path = "../../libfixmath-read-only/libfixmath/fract32.h"; sourceTree = "<group>"; };
+		3A5F3914197C47CC00A5139D /* int64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = int64.h; path = "../../libfixmath-read-only/libfixmath/int64.h"; sourceTree = "<group>"; };
+		3A5F3915197C47CC00A5139D /* libfixmath.cbp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = libfixmath.cbp; path = "../../libfixmath-read-only/libfixmath/libfixmath.cbp"; sourceTree = "<group>"; };
+		3A5F3916197C47CC00A5139D /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = "../../libfixmath-read-only/libfixmath/Makefile"; sourceTree = "<group>"; };
+		3A5F3917197C47CC00A5139D /* uint32.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = uint32.c; path = "../../libfixmath-read-only/libfixmath/uint32.c"; sourceTree = "<group>"; };
+		3A5F3918197C47CC00A5139D /* uint32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = uint32.h; path = "../../libfixmath-read-only/libfixmath/uint32.h"; sourceTree = "<group>"; };
 		3ADEA07F197C23BF00AD76C2 /* fractal-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "fractal-Bridging-Header.h"; sourceTree = "<group>"; };
 		3ADEA080197C23BF00AD76C2 /* FixedPointBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FixedPointBridge.h; sourceTree = "<group>"; };
-		3ADEA081197C23BF00AD76C2 /* FixedPointBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FixedPointBridge.m; sourceTree = "<group>"; };
+		3ADEA081197C23BF00AD76C2 /* FixedPointBridge.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = FixedPointBridge.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,11 +108,11 @@
 		3A2D9064197AADFA00206995 /* fractal */ = {
 			isa = PBXGroup;
 			children = (
+				3A515466197C452900B1705B /* fixedpoint */,
 				3A2D9067197AADFA00206995 /* AppDelegate.swift */,
 				3A2D9084197AAE2A00206995 /* FractalView.swift */,
 				3ADEA080197C23BF00AD76C2 /* FixedPointBridge.h */,
-				3ADEA081197C23BF00AD76C2 /* FixedPointBridge.m */,
-				3ADEA07E197C233100AD76C2 /* fixedptc.h */,
+				3ADEA081197C23BF00AD76C2 /* FixedPointBridge.mm */,
 				3A2D9069197AADFA00206995 /* ViewController.swift */,
 				3A2D906B197AADFA00206995 /* Main.storyboard */,
 				3A2D906E197AADFA00206995 /* Images.xcassets */,
@@ -119,6 +145,30 @@
 				3A2D9079197AADFA00206995 /* Info.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		3A515466197C452900B1705B /* fixedpoint */ = {
+			isa = PBXGroup;
+			children = (
+				3A5F3908197C47CC00A5139D /* code_style.txt */,
+				3A5F3909197C47CC00A5139D /* fix16_exp.c */,
+				3A5F390A197C47CC00A5139D /* fix16_sqrt.c */,
+				3A5F390B197C47CC00A5139D /* fix16_str.c */,
+				3A5F390C197C47CC00A5139D /* fix16_trig_sin_lut.h */,
+				3A5F390D197C47CC00A5139D /* fix16_trig.c */,
+				3A5F390E197C47CC00A5139D /* fix16.c */,
+				3A5F390F197C47CC00A5139D /* fix16.h */,
+				3A5F3910197C47CC00A5139D /* fix16_class.hpp */,
+				3A5F3911197C47CC00A5139D /* fixmath.h */,
+				3A5F3912197C47CC00A5139D /* fract32.c */,
+				3A5F3913197C47CC00A5139D /* fract32.h */,
+				3A5F3914197C47CC00A5139D /* int64.h */,
+				3A5F3915197C47CC00A5139D /* libfixmath.cbp */,
+				3A5F3916197C47CC00A5139D /* Makefile */,
+				3A5F3917197C47CC00A5139D /* uint32.c */,
+				3A5F3918197C47CC00A5139D /* uint32.h */,
+			);
+			name = fixedpoint;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -202,7 +252,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				3A2D906D197AADFA00206995 /* Main.storyboard in Resources */,
+				3A5F3920197C47CC00A5139D /* libfixmath.cbp in Resources */,
 				3A2D906F197AADFA00206995 /* Images.xcassets in Resources */,
+				3A5F3919197C47CC00A5139D /* code_style.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -220,8 +272,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3ADEA082197C23BF00AD76C2 /* FixedPointBridge.m in Sources */,
+				3A5F391D197C47CC00A5139D /* fix16_trig.c in Sources */,
+				3A5F391A197C47CC00A5139D /* fix16_exp.c in Sources */,
+				3ADEA082197C23BF00AD76C2 /* FixedPointBridge.mm in Sources */,
+				3A5F3921197C47CC00A5139D /* Makefile in Sources */,
+				3A5F391F197C47CC00A5139D /* fract32.c in Sources */,
+				3A5F391E197C47CC00A5139D /* fix16.c in Sources */,
+				3A5F3922197C47CC00A5139D /* uint32.c in Sources */,
+				3A5F391B197C47CC00A5139D /* fix16_sqrt.c in Sources */,
 				3A2D9085197AAE2A00206995 /* FractalView.swift in Sources */,
+				3A5F391C197C47CC00A5139D /* fix16_str.c in Sources */,
 				3A2D906A197AADFA00206995 /* ViewController.swift in Sources */,
 				3A2D9068197AADFA00206995 /* AppDelegate.swift in Sources */,
 			);
@@ -339,6 +399,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = fractal/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -353,6 +414,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = fractal/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

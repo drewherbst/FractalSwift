@@ -10,6 +10,5 @@
 
 @interface FixedPointBridge : NSObject
 
-+ (float) fixedPointMul:(float)a b:(float)b;
-
++(double) mul:(double)a b:(double)b;
 @end
