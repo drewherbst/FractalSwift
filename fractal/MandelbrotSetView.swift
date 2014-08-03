@@ -39,7 +39,6 @@ class MandelbrotSetView: UIView {
         self.yWidth = Y_WIDTH;
 
         self.fractalImg = UIImageView(frame: frame);
-        self.fractalImg.alpha = 0.0;
         self.activityIndicator = UIActivityIndicatorView(frame: frame);
         
         super.init(frame: frame)
@@ -151,7 +150,6 @@ class MandelbrotSetView: UIView {
                 duration: 1.0,
                 options:UIViewAnimationOptions.TransitionCrossDissolve,
                 animations: {
-                    self.fractalImg.alpha = 1.0;
                     self.fractalImg.image = img;
                 },
                 completion: nil);
