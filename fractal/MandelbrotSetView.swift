@@ -8,16 +8,10 @@
 
 import UIKit
 
-let BASE_MAX_ITER = 400.0;
-
-let X_SCALE_MIN = -2.2;
-let X_SCALE_MAX = 1.0;
-let Y_SCALE_MIN = -1.2;
-let Y_SCALE_MAX = 1.2;
-let X_WIDTH = X_SCALE_MAX - X_SCALE_MIN;
-let Y_WIDTH = Y_SCALE_MAX - Y_SCALE_MIN;
-
-class FractalView: UIView {
+/**
+ * Knows how to render the Mandelbrot set to it's bounds
+ */
+class MandelbrotSetView: UIView {
 
     var currScale: Double;
     var currMaxIter: Double;
@@ -28,9 +22,13 @@ class FractalView: UIView {
     var xMax: Double;
     var yMax: Double;
     
+    /**
+     * Initializer
+     */
     init(frame: CGRect) {
         self.currScale = 1.0;
         self.currMaxIter = currScale * BASE_MAX_ITER;
+        
         self.xMax = X_SCALE_MAX;
         self.xMin = X_SCALE_MIN;
         self.yMin = Y_SCALE_MIN;
@@ -43,6 +41,9 @@ class FractalView: UIView {
         self.attachGestureRecognizers();
     }
     
+    /**
+     * Wire up gesture recognizers for taps, double taps, etc.
+     */
     func attachGestureRecognizers() {
         var singleTap = UITapGestureRecognizer(target:self, action:"onTap:");
         singleTap.numberOfTapsRequired = 1;
@@ -61,34 +62,41 @@ class FractalView: UIView {
         doubleTap.requireGestureRecognizerToFail(tripleTap);
     }
     
+    /**
+     * Handle single tap by recentering the view
+     */
     func onTap(sender:UITapGestureRecognizer) {
         var touchPoint = sender.locationInView(self);
         recenter(touchPoint);
     }
     
+    /**
+     * Handle double tap be recentering and zooming
+     */
     func onDoubleTap(sender:UITapGestureRecognizer) {
-        NSLog("Double tap");
         currScale *= 2.0;
         
         if (currScale > 16.0) {
-            currMaxIter += 100;
+            currMaxIter += 100; 
         }
         var touchPoint = sender.locationInView(self);
         recenter(touchPoint);
     }
     
+    /**
+     * Handle triple tap by zooming out and recentering
+     */
     func onTripleTap(sender:UITapGestureRecognizer) {
-        NSLog("Triple tap");
-        NSLog("Double tap");
         currScale /= 2.0;
         currMaxIter = floor(currMaxIter / 1.50);
         var touchPoint = sender.locationInView(self);
         recenter(touchPoint);
     }
     
+    /**
+     * Recompute the viewport based on new center coordinates
+     */
     func recenter(pt: CGPoint) {
-        NSLog("-----OLD frame is %.2f, %.2f, %.2f, %.2f; x_width = %.2f; y_width = %.2f", xMin, xMax, yMin, yMax, xWidth, yWidth);
-        
         var x = Double(pt.x);
         var y = Double(pt.y);
         
@@ -96,8 +104,6 @@ class FractalView: UIView {
         var yC = (yMax - yMin) / Double(self.bounds.height-1.0);
         var x0 = xMin + x * xC;
         var y0 = yMax - y * yC;
-        
-        NSLog("Touch at %.2f, %.2f", x0, y0);
         
         xWidth /= currScale;
         yWidth /= currScale;
@@ -107,27 +113,26 @@ class FractalView: UIView {
         yMin = y0 - (yWidth/2.0);
         yMax = y0 + (yWidth/2.0);
         
-        NSLog("NEW frame is %.2f, %.2f, %.2f, %.2f; x_width = %.2f; y_width = %.2f", xMin, xMax, yMin, yMax, xWidth, yWidth);
-        
         self.setNeedsDisplay();
     }
     
-    // Only override drawRect: if you perform custom drawing.
-    // An empty implementation adversely affects performance during animation.
+    /**
+     * Draw the fractal
+     * TODO: This is terrible, don't do it in drawRect:
+     */
     override func drawRect(rect: CGRect)
     {
         let xC = (xMax - xMin) / Double(self.bounds.width-1.0);
         let yC = (yMax - yMin) / Double(self.bounds.height-1.0);
         
         var start = NSDate.date();
-        NSLog("Called, %.2f, %.2f, maxIter = %.2f", self.bounds.width, self.bounds.height, self.currMaxIter);
         var ctx = UIGraphicsGetCurrentContext();
         
         var totalBails = 0;
         
         var periodHash = Dictionary<NSValue, String>();
-        for Px in 0..self.bounds.width {
-            for Py in 0..self.bounds.height {
+        for Px in 0..<self.bounds.width {
+            for Py in 0..<self.bounds.height {
                
                 var x0 = xMin + Double(Px)*(xC);
                 var y0 = yMax - Double(Py)*(yC);
@@ -150,7 +155,6 @@ class FractalView: UIView {
                         if (xSqr + ySqr >= 4.0) {
                             break;
                         }
-                        
                         
                         var yTmp = x * y;
                         yTmp += yTmp;
