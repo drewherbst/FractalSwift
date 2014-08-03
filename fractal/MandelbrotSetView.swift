@@ -9,10 +9,11 @@
 import UIKit
 
 /**
- * Knows how to render the Mandelbrot set to it's bounds
+ * Renders the Mandelbrot set
  */
 class MandelbrotSetView: UIView {
 
+    var fractalImg:UIImageView;
     var currScale: Double;
     var currMaxIter: Double;
     var xWidth: Double;
@@ -21,6 +22,7 @@ class MandelbrotSetView: UIView {
     var yMin: Double;
     var xMax: Double;
     var yMax: Double;
+    var activityIndicator: UIActivityIndicatorView;
     
     /**
      * Initializer
@@ -35,10 +37,17 @@ class MandelbrotSetView: UIView {
         self.yMax = Y_SCALE_MAX;
         self.xWidth = X_WIDTH;
         self.yWidth = Y_WIDTH;
+
+        self.fractalImg = UIImageView(frame: frame);
+        self.fractalImg.alpha = 0.0;
+        self.activityIndicator = UIActivityIndicatorView(frame: frame);
         
         super.init(frame: frame)
-        self.backgroundColor = UIColor.whiteColor();
+        
+        self.backgroundColor = UIColor.blackColor();
         self.attachGestureRecognizers();
+        self.addSubview(self.fractalImg);
+        self.addSubview(self.activityIndicator);
     }
     
     /**
@@ -77,6 +86,8 @@ class MandelbrotSetView: UIView {
         currScale *= 2.0;
         
         if (currScale > 16.0) {
+            // todo figure out a better heuristic to start bumping up the iteration limit,
+            // or better yet, let the user control it
             currMaxIter += 100; 
         }
         var touchPoint = sender.locationInView(self);
@@ -88,7 +99,7 @@ class MandelbrotSetView: UIView {
      */
     func onTripleTap(sender:UITapGestureRecognizer) {
         currScale /= 2.0;
-        currMaxIter = floor(currMaxIter / 1.50);
+        currMaxIter = floor(currMaxIter / 1.50); // todo not great
         var touchPoint = sender.locationInView(self);
         recenter(touchPoint);
     }
@@ -112,28 +123,52 @@ class MandelbrotSetView: UIView {
         xMax = x0 + (xWidth/2.0);
         yMin = y0 - (yWidth/2.0);
         yMax = y0 + (yWidth/2.0);
+        doFractal();
         
-        self.setNeedsDisplay();
     }
     
     /**
-     * Draw the fractal
-     * TODO: This is terrible, don't do it in drawRect:
+     * Begins a rendering of a fractal to a bitmap graphics context;
+     * when complete, swaps it into an already displayed UIImageView
      */
-    override func drawRect(rect: CGRect)
+    func doFractal() {
+        self.activityIndicator.startAnimating();
+        var frame = self.fractalImg.frame;
+        
+        dispatch_async(dispatch_get_main_queue(), {
+            // create an offscreen bitmap graphics context with our need dimensions
+            UIGraphicsBeginImageContextWithOptions(frame.size, true, 1.0);
+            var ctx = UIGraphicsGetCurrentContext();
+            
+            // render the fractal to the context and grab the image once it's done
+            self.renderMandelbrot(ctx, frame:frame);
+            var img = UIGraphicsGetImageFromCurrentImageContext();
+            UIGraphicsEndImageContext();
+            
+            // swap the image in with a fancy animation and turn off the spinner
+            self.activityIndicator.stopAnimating();
+            UIView.transitionWithView(self.fractalImg,
+                duration: 1.0,
+                options:UIViewAnimationOptions.TransitionCrossDissolve,
+                animations: {
+                    self.fractalImg.alpha = 1.0;
+                    self.fractalImg.image = img;
+                },
+                completion: nil);
+        });
+    }
+    
+    func renderMandelbrot(ctx: CGContextRef, frame:CGRect)
     {
-        let xC = (xMax - xMin) / Double(self.bounds.width-1.0);
-        let yC = (yMax - yMin) / Double(self.bounds.height-1.0);
+        let xC = (xMax - xMin) / Double(frame.width-1.0);
+        let yC = (yMax - yMin) / Double(frame.height-1.0);
         
         var start = NSDate.date();
-        var ctx = UIGraphicsGetCurrentContext();
-        
         var totalBails = 0;
         
-        var periodHash = Dictionary<NSValue, String>();
-        for Px in 0..<self.bounds.width {
-            for Py in 0..<self.bounds.height {
-               
+        for Px in 0..<frame.width {
+            for Py in 0..<frame.height {
+                
                 var x0 = xMin + Double(Px)*(xC);
                 var y0 = yMax - Double(Py)*(yC);
                 
@@ -173,7 +208,7 @@ class MandelbrotSetView: UIView {
                         iteration++;
                     }
                 }
-              
+                
                 var hue = Double(iteration) / Double(self.currMaxIter);
                 CGContextSetFillColorWithColor(ctx, UIColor(hue: CGFloat(hue), saturation: 1.0, brightness: 1.0, alpha: 1.0).CGColor);
                 CGContextFillRect(ctx, CGRectMake(Px, Py, 1.0, 1.0));
@@ -181,4 +216,5 @@ class MandelbrotSetView: UIView {
         } // end algorithm
         NSLog("Total bailouts = %d; Execution time took %.2f", totalBails, -start.timeIntervalSinceNow);
     }
+    
 }
