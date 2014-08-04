@@ -8,6 +8,8 @@
 
 import UIKit
 
+var renderingQueue: dispatch_queue_t? = dispatch_queue_create("rendering_queue", nil);
+
 /**
  * Renders the Mandelbrot set
  */
@@ -39,8 +41,9 @@ class MandelbrotSetView: UIView {
         self.yWidth = Y_WIDTH;
 
         self.fractalImg = UIImageView(frame: frame);
-        self.activityIndicator = UIActivityIndicatorView(frame: frame);
-        
+        self.activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: UIActivityIndicatorViewStyle.WhiteLarge);
+        self.activityIndicator.frame = frame;
+
         super.init(frame: frame)
         
         self.backgroundColor = UIColor.blackColor();
@@ -122,8 +125,8 @@ class MandelbrotSetView: UIView {
         xMax = x0 + (xWidth/2.0);
         yMin = y0 - (yWidth/2.0);
         yMax = y0 + (yWidth/2.0);
-        doFractal();
         
+        doFractal();
     }
     
     /**
@@ -132,28 +135,42 @@ class MandelbrotSetView: UIView {
      */
     func doFractal() {
         self.activityIndicator.startAnimating();
-        var frame = self.fractalImg.frame;
         
-        dispatch_async(dispatch_get_main_queue(), {
-            // create an offscreen bitmap graphics context with our need dimensions
-            UIGraphicsBeginImageContextWithOptions(frame.size, true, 1.0);
-            var ctx = UIGraphicsGetCurrentContext();
+        for var i = 0.25; i <= 1.00; i += 0.25 {
+            var t = CGAffineTransformMakeScale(CGFloat(i),CGFloat(i));
             
-            // render the fractal to the context and grab the image once it's done
-            self.renderMandelbrot(ctx, frame:frame);
-            var img = UIGraphicsGetImageFromCurrentImageContext();
-            UIGraphicsEndImageContext();
-            
-            // swap the image in with a fancy animation and turn off the spinner
-            self.activityIndicator.stopAnimating();
-            UIView.transitionWithView(self.fractalImg,
-                duration: 1.0,
-                options:UIViewAnimationOptions.TransitionCrossDissolve,
-                animations: {
-                    self.fractalImg.image = img;
-                },
-                completion: nil);
-        });
+            var frame = CGRectApplyAffineTransform(self.fractalImg.frame, t);
+            dispatch_async(renderingQueue, {
+                
+                // create an offscreen bitmap graphics context with our need dimensions
+                UIGraphicsBeginImageContextWithOptions(frame.size, true, 1.0);
+                var ctx = UIGraphicsGetCurrentContext();
+                
+                // render the fractal to the context and grab the image once it's done
+                self.renderMandelbrot(ctx, frame:frame);
+                var img = UIGraphicsGetImageFromCurrentImageContext();
+                UIGraphicsEndImageContext();
+                
+                // swap the image in with a fancy animation and turn off the spinner
+                dispatch_async(dispatch_get_main_queue(), {
+                    self.activityIndicator.startAnimating();
+
+                    UIView.transitionWithView(self.fractalImg,
+                        duration: 0.6,
+                        options:UIViewAnimationOptions.TransitionCurlDown,
+                        animations: {
+                            self.fractalImg.image = img;
+                        },
+                        completion:nil
+                    );
+                    });
+                });
+        }
+        dispatch_async(renderingQueue, {
+            dispatch_async(dispatch_get_main_queue(), {
+                self.activityIndicator.stopAnimating();
+                });
+            });
     }
     
     func renderMandelbrot(ctx: CGContextRef, frame:CGRect)
@@ -164,13 +181,16 @@ class MandelbrotSetView: UIView {
         var start = NSDate.date();
         var totalBails = 0;
         
+        var iterationsPerPixel = Dictionary<Double, Int>();
+        var pixelVals = Dictionary<NSValue, Double>();
+        
         for Px in 0..<frame.width {
             for Py in 0..<frame.height {
                 
                 var x0 = xMin + Double(Px)*(xC);
                 var y0 = yMax - Double(Py)*(yC);
                 
-                var iteration = 0.0
+                var iteration = 0.0;
                 var x = 0.0
                 var y = 0.0
                 
@@ -215,4 +235,5 @@ class MandelbrotSetView: UIView {
         NSLog("Total bailouts = %d; Execution time took %.2f", totalBails, -start.timeIntervalSinceNow);
     }
     
+
 }
