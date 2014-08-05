@@ -157,7 +157,7 @@ class MandelbrotSetView: UIView {
 
                     UIView.transitionWithView(self.fractalImg,
                         duration: 0.6,
-                        options:UIViewAnimationOptions.TransitionCurlDown,
+                        options:UIViewAnimationOptions.TransitionCrossDissolve,
                         animations: {
                             self.fractalImg.image = img;
                         },
@@ -183,7 +183,8 @@ class MandelbrotSetView: UIView {
         
         var iterationsPerPixel = Dictionary<Double, Int>();
         var pixelVals = Dictionary<NSValue, Double>();
-        
+        var totalIters = 0;
+
         for Px in 0..<frame.width {
             for Py in 0..<frame.height {
                 
@@ -193,7 +194,7 @@ class MandelbrotSetView: UIView {
                 var iteration = 0.0;
                 var x = 0.0
                 var y = 0.0
-                
+
                 //Cardioid
                 var temp = x0 + 1.0;
                 temp = temp * temp + y0*y0;
@@ -202,6 +203,7 @@ class MandelbrotSetView: UIView {
                     totalBails++;
                 } else {
                     while (iteration < currMaxIter) {
+                        totalIters++;
                         var xSqr = x * x;
                         var ySqr = y * y;
                         
@@ -232,8 +234,8 @@ class MandelbrotSetView: UIView {
                 CGContextFillRect(ctx, CGRectMake(Px, Py, 1.0, 1.0));
             }
         } // end algorithm
-        NSLog("Total bailouts = %d; Execution time took %.2f", totalBails, -start.timeIntervalSinceNow);
-    }
+ var interval = Double(-start.timeIntervalSinceNow);
+        NSLog("Total bailouts = %d; Execution time took %.2f, %.2f MM iters/sec", totalBails, -start.timeIntervalSinceNow, (Double(totalIters)/interval)/1000000.0);    }
     
 
 }
