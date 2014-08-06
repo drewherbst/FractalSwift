@@ -8,13 +8,13 @@
 
 import Foundation
 
-let BASE_MAX_ITER = 500.0;
+let BASE_MAX_ITER:Double = 700.0;
 
 // base viewport
-let X_SCALE_MIN = -2.2;
-let X_SCALE_MAX = 1.0;
-let Y_SCALE_MIN = -1.2;
-let Y_SCALE_MAX = 1.2;
+let X_SCALE_MIN:Double = -2.2;
+let X_SCALE_MAX:Double = 1.0;
+let Y_SCALE_MIN:Double = -1.2;
+let Y_SCALE_MAX:Double = 1.2;
 
-let X_WIDTH = X_SCALE_MAX - X_SCALE_MIN;
-let Y_WIDTH = Y_SCALE_MAX - Y_SCALE_MIN;
+let X_WIDTH:Double = X_SCALE_MAX - X_SCALE_MIN;
+let Y_WIDTH:Double = Y_SCALE_MAX - Y_SCALE_MIN;

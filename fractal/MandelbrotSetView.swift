@@ -175,12 +175,13 @@ class MandelbrotSetView: UIView {
     
     func renderMandelbrot(ctx: CGContextRef, frame:CGRect)
     {
-        let xC = (xMax - xMin) / Double(frame.width-1.0);
-        let yC = (yMax - yMin) / Double(frame.height-1.0);
+        let xC = Double(xMax - xMin) / Double(frame.width-1.0);
+        let yC = Double(yMax - yMin) / Double(frame.height-1.0);
         
         var start = NSDate.date();
         var totalBails = 0;
         
+
         var iterationsPerPixel = Dictionary<Double, Int>();
         var pixelVals = Dictionary<NSValue, Double>();
         var totalIters = 0;
@@ -188,12 +189,12 @@ class MandelbrotSetView: UIView {
         for Px in 0..<frame.width {
             for Py in 0..<frame.height {
                 
-                var x0 = xMin + Double(Px)*(xC);
-                var y0 = yMax - Double(Py)*(yC);
+                var x0:Double = xMin + Double(Px)*(xC);
+                var y0:Double = yMax - Double(Py)*(yC);
                 
-                var iteration = 0.0;
-                var x = 0.0
-                var y = 0.0
+                var iteration:Double = 0.0;
+                var x:Double = 0.0
+                var y:Double = 0.0
 
                 //Cardioid
                 var temp = x0 + 1.0;
@@ -202,40 +203,65 @@ class MandelbrotSetView: UIView {
                     iteration = currMaxIter;
                     totalBails++;
                 } else {
-                    while (iteration < currMaxIter) {
-                        totalIters++;
-                        var xSqr = x * x;
-                        var ySqr = y * y;
-                        
-                        if (xSqr + ySqr >= 4.0) {
-                            break;
-                        }
-                        
-                        var yTmp = x * y;
-                        yTmp += yTmp;
-                        yTmp += y0;
-                        var xTmp = xSqr - ySqr + x0;
-                        
-                        if (x == xTmp && y == yTmp) {
-                            totalBails++;
-                            iteration = currMaxIter;
-                            break;
-                        }
-                        
-                        x = xTmp;
-                        y = yTmp;
-                        
-                        iteration++;
-                    }
+                    var result = self.mandel_double_period(x0, ci:y0);
+                    iteration = Double(result.iterations);
+                    totalIters += result.actualIterations;
                 }
                 
-                var hue = Double(iteration) / Double(self.currMaxIter);
+                var hue = Float(iteration) / Float(self.currMaxIter);
                 CGContextSetFillColorWithColor(ctx, UIColor(hue: CGFloat(hue), saturation: 1.0, brightness: 1.0, alpha: 1.0).CGColor);
                 CGContextFillRect(ctx, CGRectMake(Px, Py, 1.0, 1.0));
             }
         } // end algorithm
- var interval = Double(-start.timeIntervalSinceNow);
-        NSLog("Total bailouts = %d; Execution time took %.2f, %.2f MM iters/sec", totalBails, -start.timeIntervalSinceNow, (Double(totalIters)/interval)/1000000.0);    }
+
+
+        var interval = Double(-start.timeIntervalSinceNow);
+        NSLog("Total bailouts = %d; Execution time took %.2f, %.2f MM iters/sec", totalBails, -start.timeIntervalSinceNow, (Double(totalIters)/interval)/1000000.0);
+    }
     
+    func mandel_double_period(cr:Double, ci:Double) -> (iterations:Int, actualIterations:Int)
+    {
+        var zr = cr;
+        var zi = ci;
+        var tmp:Double;
+        
+        var ckr:Double;
+        var cki:Double;
+        
+        var p:Int = 0;
+        var ptot:Int = 8;
+        var totalIters:Int = 0;
+        var maxIters:Int = Int(currMaxIter);
+        do
+        {
+            ckr = zr;
+            cki = zi;
+            
+            ptot += ptot;
+            if (ptot > maxIters) {
+                ptot = maxIters;
+            }
+            
+            for (; p < ptot; p++)
+            {
+                totalIters++;
+                tmp = zr * zr - zi * zi + cr;
+                zi *= 2 * zr;
+                zi += ci;
+                zr = tmp;
+                
+                if (zr * zr + zi * zi > 4.0) {
+                    return (p, totalIters);
+                }
+                
+                if ((zr == ckr) && (zi == cki)) {
+                    return (maxIters, totalIters);
+                }
+            }
+        }
+        while (ptot != maxIters);
+        
+        return (maxIters, totalIters);
+    }
 
 }
