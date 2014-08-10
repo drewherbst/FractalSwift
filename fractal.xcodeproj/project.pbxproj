@@ -13,6 +13,7 @@
 		3A2D906F197AADFA00206995 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3A2D906E197AADFA00206995 /* Images.xcassets */; };
 		3A2D907B197AADFA00206995 /* fractalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2D907A197AADFA00206995 /* fractalTests.swift */; };
 		3A2D9085197AAE2A00206995 /* MandelbrotSetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2D9084197AAE2A00206995 /* MandelbrotSetView.swift */; };
+		3A4004801991B7950058D594 /* MyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A40047F1991B7950058D594 /* MyView.swift */; };
 		3AEFCCA1198E7D4700290C83 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AEFCCA0198E7D4700290C83 /* Constants.swift */; };
 /* End PBXBuildFile section */
 
@@ -37,6 +38,7 @@
 		3A2D9079197AADFA00206995 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3A2D907A197AADFA00206995 /* fractalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fractalTests.swift; sourceTree = "<group>"; };
 		3A2D9084197AAE2A00206995 /* MandelbrotSetView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MandelbrotSetView.swift; sourceTree = "<group>"; };
+		3A40047F1991B7950058D594 /* MyView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MyView.swift; sourceTree = "<group>"; };
 		3AEFCCA0198E7D4700290C83 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -79,6 +81,7 @@
 		3A2D9064197AADFA00206995 /* fractal */ = {
 			isa = PBXGroup;
 			children = (
+				3A40047F1991B7950058D594 /* MyView.swift */,
 				3A2D9067197AADFA00206995 /* AppDelegate.swift */,
 				3AEFCCA0198E7D4700290C83 /* Constants.swift */,
 				3A2D9084197AAE2A00206995 /* MandelbrotSetView.swift */,
@@ -216,6 +219,7 @@
 			files = (
 				3A2D9085197AAE2A00206995 /* MandelbrotSetView.swift in Sources */,
 				3A2D906A197AADFA00206995 /* ViewController.swift in Sources */,
+				3A4004801991B7950058D594 /* MyView.swift in Sources */,
 				3A2D9068197AADFA00206995 /* AppDelegate.swift in Sources */,
 				3AEFCCA1198E7D4700290C83 /* Constants.swift in Sources */,
 			);

@@ -8,7 +8,8 @@
 
 import UIKit
 
-var renderingQueue: dispatch_queue_t? = dispatch_queue_create("rendering_queue", nil);
+var renderingQueue: dispatch_queue_t? = dispatch_queue_create("rendering_queue", DISPATCH_QUEUE_CONCURRENT);
+
 
 /**
  * Renders the Mandelbrot set
@@ -17,7 +18,7 @@ class MandelbrotSetView: UIView {
 
     var fractalImg:UIImageView;
     var currScale: Double;
-    var currMaxIter: Double;
+    var currMaxIter: Int;
     var xWidth: Double;
     var yWidth: Double;
     var xMin: Double;
@@ -25,13 +26,18 @@ class MandelbrotSetView: UIView {
     var xMax: Double;
     var yMax: Double;
     var activityIndicator: UIActivityIndicatorView;
+
+    required init(coder: NSCoder) {
+        fatalError("NSCoding not supported")
+    }
     
     /**
      * Initializer
      */
-    init(frame: CGRect) {
+     override init(frame: CGRect) {
+
         self.currScale = 1.0;
-        self.currMaxIter = currScale * BASE_MAX_ITER;
+        self.currMaxIter = BASE_MAX_ITER;
         
         self.xMax = X_SCALE_MAX;
         self.xMin = X_SCALE_MIN;
@@ -87,7 +93,7 @@ class MandelbrotSetView: UIView {
     func onDoubleTap(sender:UITapGestureRecognizer) {
         currScale *= 2.0;
         
-        if (currScale > 16.0) {
+        if (currScale > 8.0) {
             // todo figure out a better heuristic to start bumping up the iteration limit,
             // or better yet, let the user control it
             currMaxIter += 100; 
@@ -101,7 +107,6 @@ class MandelbrotSetView: UIView {
      */
     func onTripleTap(sender:UITapGestureRecognizer) {
         currScale /= 2.0;
-        currMaxIter = floor(currMaxIter / 1.50); // todo not great
         var touchPoint = sender.locationInView(self);
         recenter(touchPoint);
     }
@@ -136,91 +141,161 @@ class MandelbrotSetView: UIView {
     func doFractal() {
         self.activityIndicator.startAnimating();
         
-        for var i = 0.25; i <= 1.00; i += 0.25 {
+        for var i = 1.00; i <= 1.00; i += 0.25 {
             var t = CGAffineTransformMakeScale(CGFloat(i),CGFloat(i));
             
             var frame = CGRectApplyAffineTransform(self.fractalImg.frame, t);
             dispatch_async(renderingQueue, {
                 
-                // create an offscreen bitmap graphics context with our need dimensions
-                UIGraphicsBeginImageContextWithOptions(frame.size, true, 1.0);
-                var ctx = UIGraphicsGetCurrentContext();
                 
-                // render the fractal to the context and grab the image once it's done
-                self.renderMandelbrot(ctx, frame:frame);
-                var img = UIGraphicsGetImageFromCurrentImageContext();
-                UIGraphicsEndImageContext();
-                
-                // swap the image in with a fancy animation and turn off the spinner
-                dispatch_async(dispatch_get_main_queue(), {
-                    self.activityIndicator.startAnimating();
+                // kickoff the rendering
+                self.renderMandelbrot(frame, completion:{(ctxs:[CGContextRef]) in
+                    NSLog("Rendering complete, swapping in image.");
+             
+                        // swap the image in with a fancy animation and turn off the spinner
+                        dispatch_async(dispatch_get_main_queue(), {
+                            UIGraphicsBeginImageContextWithOptions(frame.size, true, 1.0);
+                            NSLog("%d contexts to merge", ctxs.count);
+                            for var i = 0; i < ctxs.count; i++ {
+                                var ctx = ctxs[i];
+                            
+                                UIGraphicsPushContext(ctx);
+                                var img = UIGraphicsGetImageFromCurrentImageContext();
+                                UIGraphicsPopContext();
+                                img.drawInRect(frame);
+                            }
+                            var newImage = UIGraphicsGetImageFromCurrentImageContext();
+                            UIGraphicsEndImageContext();
 
-                    UIView.transitionWithView(self.fractalImg,
-                        duration: 0.6,
-                        options:UIViewAnimationOptions.TransitionCrossDissolve,
-                        animations: {
-                            self.fractalImg.image = img;
-                        },
-                        completion:nil
-                    );
-                    });
-                });
-        }
-        dispatch_async(renderingQueue, {
-            dispatch_async(dispatch_get_main_queue(), {
-                self.activityIndicator.stopAnimating();
+                            self.activityIndicator.stopAnimating();
+                            UIView.transitionWithView(self.fractalImg,
+                                duration: 0.6,
+                                options:UIViewAnimationOptions.TransitionCrossDissolve,
+                                animations: {
+                                    self.fractalImg.image = newImage;
+                                },
+                                completion:nil
+                            );
+                        });
+
+                    
                 });
             });
+                    
+            
+        }
     }
     
-    func renderMandelbrot(ctx: CGContextRef, frame:CGRect)
-    {
+    /**
+     * Renders the mandelbrot set to the supplied graphics context asynchronously
+     * Invokes completion() when finished
+     */
+    func renderMandelbrot(frame:CGRect, completion:(ctxs:[CGContextRef])->Void) {
         let xC = Double(xMax - xMin) / Double(frame.width-1.0);
         let yC = Double(yMax - yMin) / Double(frame.height-1.0);
         
-        var start = NSDate.date();
-        var totalBails = 0;
+        var now = NSDate.date();
+        var perfCounters = (totalIters:0, totalBails:0);
+
+        var divisions = self.subdivide(0, end: Int(frame.width), numDivisions: 1);
+        var iterationsPerPixel:[[Int]] = [[Int]](count: Int(frame.width)+1, repeatedValue: [Int](count: Int(frame.height)+1, repeatedValue: 0));
         
-
-        var iterationsPerPixel = Dictionary<Double, Int>();
-        var pixelVals = Dictionary<NSValue, Double>();
-        var totalIters = 0;
-
-        for Px in 0..<frame.width {
-            for Py in 0..<frame.height {
+        var workUnits = divisions.count;
+        NSLog("Will dispatch work to %d workers", workUnits);
+        
+        var ctxs = Array<CGContextRef>();
+        var renderingDispatchGroup = dispatch_group_create();
+        for rng in divisions {
+            dispatch_group_async(renderingDispatchGroup, renderingQueue, {
+                // create an offscreen bitmap graphics context with our needed dimensions
+                UIGraphicsBeginImageContextWithOptions(frame.size, true, 1.0);
+                var ctx:CGContextRef = UIGraphicsGetCurrentContext();
+                ctxs.append(ctx);
                 
-                var x0:Double = xMin + Double(Px)*(xC);
-                var y0:Double = yMax - Double(Py)*(yC);
+                NSLog("Dispatched work on %@", NSString.stringWithUTF8String(dispatch_queue_get_label(renderingQueue)));
+                var start = rng.location;
+                var end = rng.location + rng.length;
                 
-                var iteration:Double = 0.0;
-                var x:Double = 0.0
-                var y:Double = 0.0
+                for Px in start...end {
+                    for Py in 0...Int(frame.height) {
+                        
+                        var x0:Double = self.xMin + Double(Px)*(xC);
+                        var y0:Double = self.yMax - Double(Py)*(yC);
+                        
+                        var iteration:Int = 0.0;
+                        var x:Double = 0.0
+                        var y:Double = 0.0
+                        
+                        //Cardioid
+                        var temp = x0 + 1.0;
+                        temp = temp * temp + y0*y0;
+                        if (temp < CARDIOID_BAILOUT){
+                            iteration = self.currMaxIter;
+                            perfCounters.totalBails++;
+                        } else {
+                            var result = self.mandel_double_period(x0, ci:y0);
+                            iteration = result.iterations;
+                            perfCounters.totalIters += result.actualIterations;
+                        }
+                        
+                        UIGraphicsPushContext(ctx);
+                        var hue = Float(iteration) / Float(self.currMaxIter);
+                        CGContextSetFillColorWithColor(ctx,
+                            UIColor(hue: CGFloat(hue),
+                            saturation: 1.0,
+                            brightness: 1.0,
+                            alpha: 1.0).CGColor);
+                        
+                        
+                        CGContextFillRect(ctx, CGRectMake(CGFloat(Px), CGFloat(Py), 1.0, 1.0));
+                                                UIGraphicsPopContext();
+                    }
+                } // end algorithm
 
-                //Cardioid
-                var temp = x0 + 1.0;
-                temp = temp * temp + y0*y0;
-                if (temp < 0.0625){
-                    iteration = currMaxIter;
-                    totalBails++;
-                } else {
-                    var result = self.mandel_double_period(x0, ci:y0);
-                    iteration = Double(result.iterations);
-                    totalIters += result.actualIterations;
-                }
-                
-                var hue = Float(iteration) / Float(self.currMaxIter);
-                CGContextSetFillColorWithColor(ctx, UIColor(hue: CGFloat(hue), saturation: 1.0, brightness: 1.0, alpha: 1.0).CGColor);
-                CGContextFillRect(ctx, CGRectMake(Px, Py, 1.0, 1.0));
-            }
-        } // end algorithm
+            });
+        }
+        
+        // get notified when we're done with all rendering tasks
+        dispatch_group_notify(renderingDispatchGroup, renderingQueue, {
+            var interval = Double(-now.timeIntervalSinceNow);
+            NSLog("Queue empty; total bailouts = %d; execution time took %.2f, %.2f MM iters/sec",
+                perfCounters.totalBails,
+                -now.timeIntervalSinceNow,
+                (Double(perfCounters.totalIters)/interval)/1000000.0);
+            NSLog("%d contexts to pass back", ctxs.count);
 
-
-        var interval = Double(-start.timeIntervalSinceNow);
-        NSLog("Total bailouts = %d; Execution time took %.2f, %.2f MM iters/sec", totalBails, -start.timeIntervalSinceNow, (Double(totalIters)/interval)/1000000.0);
+            completion(ctxs:ctxs);
+        });
     }
     
-    func mandel_double_period(cr:Double, ci:Double) -> (iterations:Int, actualIterations:Int)
-    {
+    /**
+     * Subdivides the given range into subranges
+     */
+    func subdivide(start:Int, end:Int, numDivisions:Int) -> (ranges:[NSRange]) {
+        var ranges = Array<NSRange>();
+        if (numDivisions == 1) {
+            ranges.append(NSMakeRange(start, end-start));
+            return ranges;
+        }
+        
+        var curr = start;
+        var len = (end + 1 - start)/numDivisions;
+        do {
+            if (curr + len + 1 == end) {
+                ranges.append(NSMakeRange(curr, len+1));
+                break;
+            }
+            ranges.append(NSMakeRange(curr, len));
+            curr += len;
+            if (curr > end) {
+                curr = end;
+            }
+        } while(curr < end);
+        return ranges;
+    }
+    
+    
+    func mandel_double_period(cr:Double, ci:Double) -> (iterations:Int, actualIterations:Int) {
         var zr = cr;
         var zi = ci;
         var tmp:Double;
@@ -232,8 +307,7 @@ class MandelbrotSetView: UIView {
         var ptot:Int = 8;
         var totalIters:Int = 0;
         var maxIters:Int = Int(currMaxIter);
-        do
-        {
+        do {
             ckr = zr;
             cki = zi;
             
@@ -264,4 +338,7 @@ class MandelbrotSetView: UIView {
         return (maxIters, totalIters);
     }
 
+    func getNumCores() -> Int {
+        return NSProcessInfo.processInfo().processorCount;
+    }
 }
