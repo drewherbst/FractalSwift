@@ -14,6 +14,7 @@
 		3A2D907B197AADFA00206995 /* fractalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2D907A197AADFA00206995 /* fractalTests.swift */; };
 		3A2D9085197AAE2A00206995 /* MandelbrotSetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2D9084197AAE2A00206995 /* MandelbrotSetView.swift */; };
 		3A4004801991B7950058D594 /* MyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A40047F1991B7950058D594 /* MyView.swift */; };
+		3AA3843A199836ED0057AF83 /* ScreenPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA38439199836ED0057AF83 /* ScreenPoint.swift */; };
 		3AEFCCA1198E7D4700290C83 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AEFCCA0198E7D4700290C83 /* Constants.swift */; };
 /* End PBXBuildFile section */
 
@@ -39,6 +40,7 @@
 		3A2D907A197AADFA00206995 /* fractalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fractalTests.swift; sourceTree = "<group>"; };
 		3A2D9084197AAE2A00206995 /* MandelbrotSetView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MandelbrotSetView.swift; sourceTree = "<group>"; };
 		3A40047F1991B7950058D594 /* MyView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MyView.swift; sourceTree = "<group>"; };
+		3AA38439199836ED0057AF83 /* ScreenPoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScreenPoint.swift; sourceTree = "<group>"; };
 		3AEFCCA0198E7D4700290C83 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -89,6 +91,7 @@
 				3A2D906B197AADFA00206995 /* Main.storyboard */,
 				3A2D906E197AADFA00206995 /* Images.xcassets */,
 				3A2D9065197AADFA00206995 /* Supporting Files */,
+				3AA38439199836ED0057AF83 /* ScreenPoint.swift */,
 			);
 			path = fractal;
 			sourceTree = "<group>";
@@ -217,6 +220,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3AA3843A199836ED0057AF83 /* ScreenPoint.swift in Sources */,
 				3A2D9085197AAE2A00206995 /* MandelbrotSetView.swift in Sources */,
 				3A2D906A197AADFA00206995 /* ViewController.swift in Sources */,
 				3A4004801991B7950058D594 /* MyView.swift in Sources */,
@@ -277,7 +281,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_OPTIMIZATION_LEVEL = fast;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",

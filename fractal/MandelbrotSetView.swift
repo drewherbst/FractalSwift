@@ -8,11 +8,12 @@
 
 import UIKit
 
+// GCD queue our computations will be run on
 var renderingQueue: dispatch_queue_t? = dispatch_queue_create("rendering_queue", DISPATCH_QUEUE_CONCURRENT);
-
 
 /**
  * Renders the Mandelbrot set
+ * TODO not braindead coloring
  */
 class MandelbrotSetView: UIView {
 
@@ -147,42 +148,44 @@ class MandelbrotSetView: UIView {
             var frame = CGRectApplyAffineTransform(self.fractalImg.frame, t);
             dispatch_async(renderingQueue, {
                 
-                
-                // kickoff the rendering
-                self.renderMandelbrot(frame, completion:{(ctxs:[CGContextRef]) in
+                // kickoff the rendering and register our completion callback
+                self.renderMandelbrot(frame, completion:{(iterationsPerPixel:NSMutableArray) in
                     NSLog("Rendering complete, swapping in image.");
-             
-                        // swap the image in with a fancy animation and turn off the spinner
-                        dispatch_async(dispatch_get_main_queue(), {
-                            UIGraphicsBeginImageContextWithOptions(frame.size, true, 1.0);
-                            NSLog("%d contexts to merge", ctxs.count);
-                            for var i = 0; i < ctxs.count; i++ {
-                                var ctx = ctxs[i];
-                            
-                                UIGraphicsPushContext(ctx);
-                                var img = UIGraphicsGetImageFromCurrentImageContext();
-                                UIGraphicsPopContext();
-                                img.drawInRect(frame);
-                            }
-                            var newImage = UIGraphicsGetImageFromCurrentImageContext();
-                            UIGraphicsEndImageContext();
-
-                            self.activityIndicator.stopAnimating();
-                            UIView.transitionWithView(self.fractalImg,
-                                duration: 0.6,
-                                options:UIViewAnimationOptions.TransitionCrossDissolve,
-                                animations: {
-                                    self.fractalImg.image = newImage;
-                                },
-                                completion:nil
-                            );
-                        });
-
                     
+                    // render the image in with a fancy animation and turn off the spinner
+                    dispatch_async(dispatch_get_main_queue(), {
+                        
+                        UIGraphicsBeginImageContextWithOptions(frame.size, true, 1.0);
+                        var ctx = UIGraphicsGetCurrentContext();
+                        for var i = 0; i < iterationsPerPixel.count; i++ {
+                            var arr:NSMutableArray = iterationsPerPixel.objectAtIndex(i) as NSMutableArray;
+                            for var j = 0; j < arr.count; j++ {
+                                var pt:ScreenPoint = arr.objectAtIndex(j) as ScreenPoint;
+                                var hue = Float(pt.iteration) / Float(self.currMaxIter);
+                                CGContextSetFillColorWithColor(ctx,
+                                    UIColor(hue: CGFloat(hue),
+                                        saturation: 1.0,
+                                        brightness: 1.0,
+                                        alpha: 1.0).CGColor);
+                                CGContextFillRect(ctx, pt.rect);
+                            }
+                        }
+                        
+                        var img = UIGraphicsGetImageFromCurrentImageContext();
+                        UIGraphicsEndImageContext();
+                        
+                        self.activityIndicator.stopAnimating();
+                        UIView.transitionWithView(self.fractalImg,
+                            duration: 0.6,
+                            options:UIViewAnimationOptions.TransitionCrossDissolve,
+                            animations: {
+                                self.fractalImg.image = img;
+                            },
+                            completion:nil
+                        );
+                    });
                 });
             });
-                    
-            
         }
     }
     
@@ -190,28 +193,32 @@ class MandelbrotSetView: UIView {
      * Renders the mandelbrot set to the supplied graphics context asynchronously
      * Invokes completion() when finished
      */
-    func renderMandelbrot(frame:CGRect, completion:(ctxs:[CGContextRef])->Void) {
+    func renderMandelbrot(frame:CGRect, completion:(iterationsPerPixel:NSMutableArray)->Void) {
+
         let xC = Double(xMax - xMin) / Double(frame.width-1.0);
         let yC = Double(yMax - yMin) / Double(frame.height-1.0);
         
         var now = NSDate.date();
         var perfCounters = (totalIters:0, totalBails:0);
 
-        var divisions = self.subdivide(0, end: Int(frame.width), numDivisions: 1);
-        var iterationsPerPixel:[[Int]] = [[Int]](count: Int(frame.width)+1, repeatedValue: [Int](count: Int(frame.height)+1, repeatedValue: 0));
+        // allocate a 2d nsarray to hold our iteration values
+        // note: for whatever reason, a 2d swift array segfaults 
+        // while being mutated by multiple threads, even though 
+        // they're working on disjoint parts of the array
+        var iterationsPerPixel = NSMutableArray(capacity:Int(frame.width+1));
+        for var i = 0; i < Int(frame.width)+1; i++ {
+            iterationsPerPixel.addObject(NSMutableArray(capacity:Int(frame.height+1)));
+        }
         
-        var workUnits = divisions.count;
-        NSLog("Will dispatch work to %d workers", workUnits);
+        // subdivide into a block of points per cpu core, then dispatch 
+        // asynchronously
+        var divisions = self.subdivide(0, end: Int(frame.width), numDivisions: getNumCores());
+        NSLog("Will dispatch work to %d workers", divisions.count);
         
-        var ctxs = Array<CGContextRef>();
         var renderingDispatchGroup = dispatch_group_create();
         for rng in divisions {
             dispatch_group_async(renderingDispatchGroup, renderingQueue, {
-                // create an offscreen bitmap graphics context with our needed dimensions
-                UIGraphicsBeginImageContextWithOptions(frame.size, true, 1.0);
-                var ctx:CGContextRef = UIGraphicsGetCurrentContext();
-                ctxs.append(ctx);
-                
+                // main computation loop
                 NSLog("Dispatched work on %@", NSString.stringWithUTF8String(dispatch_queue_get_label(renderingQueue)));
                 var start = rng.location;
                 var end = rng.location + rng.length;
@@ -238,17 +245,11 @@ class MandelbrotSetView: UIView {
                             perfCounters.totalIters += result.actualIterations;
                         }
                         
-                        UIGraphicsPushContext(ctx);
-                        var hue = Float(iteration) / Float(self.currMaxIter);
-                        CGContextSetFillColorWithColor(ctx,
-                            UIColor(hue: CGFloat(hue),
-                            saturation: 1.0,
-                            brightness: 1.0,
-                            alpha: 1.0).CGColor);
-                        
-                        
-                        CGContextFillRect(ctx, CGRectMake(CGFloat(Px), CGFloat(Py), 1.0, 1.0));
-                                                UIGraphicsPopContext();
+                        // record our result
+                        var rect = CGRectMake(CGFloat(Px), CGFloat(Py), 1.0, 1.0)
+                        var result = ScreenPoint(rect:rect, iteration:iteration);
+                        var arr:NSMutableArray = iterationsPerPixel.objectAtIndex(Px) as NSMutableArray;
+                        arr.setObject(result, atIndexedSubscript: Py);
                     }
                 } // end algorithm
 
@@ -262,9 +263,7 @@ class MandelbrotSetView: UIView {
                 perfCounters.totalBails,
                 -now.timeIntervalSinceNow,
                 (Double(perfCounters.totalIters)/interval)/1000000.0);
-            NSLog("%d contexts to pass back", ctxs.count);
-
-            completion(ctxs:ctxs);
+            completion(iterationsPerPixel:iterationsPerPixel);
         });
     }
     

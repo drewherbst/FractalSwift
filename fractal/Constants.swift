@@ -8,7 +8,7 @@
 
 import Foundation
 
-let BASE_MAX_ITER:Int = 1000;
+let BASE_MAX_ITER:Int = 400;
 
 // base viewport
 let X_SCALE_MIN:Double = -2.2;
